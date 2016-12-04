@@ -1,5 +1,6 @@
-#include "worker.h"
 #include "config.h"
+#include "data.h"
+#include "worker.h"
 
 #include "MPI_functions.h"
 
@@ -8,58 +9,58 @@
 #include <stdlib.h>
 #include <string>
 
-
-
-
-int main(int argc, char** argv) {
+int main(int argc, char** argv) 
+{
   ConfReader conf_reader = ConfReader("../config.conf", "GEN");
   int num_slots = conf_reader.get_int("num_slots");
   int num_parameters = conf_reader.get_int("num_parameters");
+  int num_files = conf_reader.get_int("num_files");
+  int num_data = conf_reader.get_int("num_data");
+  int slot_size = conf_reader.get_int("slot_size");
+  std::string file_name = conf_reader.get_string("data_file_name");
 
   int world_rank;
   int world_size;
   init(&world_rank, &world_size);
 
-  printf("%d, %d\n", world_rank, world_size);
+  // printf("%d, %d\n", world_rank, world_size);
 
 
-  Shared_mem shared_table = Shared_mem();
+  Shared_mem_int shared_table = Shared_mem_int();
   allocate_table(num_slots, shared_table);
-  printf("For worker %d, the pointer is %x\n", world_rank, shared_table.ptr);
+  // printf("For worker %d, the pointer is %x\n", world_rank, shared_table.ptr);
 
-  Shared_mem shared_slots = Shared_mem();
+  Shared_mem_float shared_slots = Shared_mem_float();
   allocate_slots(num_slots, num_parameters, shared_slots);
-  printf("For worker %d, the pointer is %x\n", world_rank, shared_slots.ptr);
+  // printf("For worker %d, the pointer is %x\n", world_rank, shared_slots.ptr);
+
+  Shared_mem_int shared_file_table = Shared_mem_int();
+  allocate_file_table(num_files, shared_file_table);
+  // printf("For worker %d, the pointer is %x\n", world_rank, shared_file_table.ptr);
+
+  MPI_File *files = new MPI_File[num_files];
+  open_files(num_files, files, shared_file_table, file_name);
 
 
 
-  finish(shared_table, shared_slots);
+  // int n_float = 2;
+  // float buf[n_float];
+  // MPI_Status status;
+  // MPI_File_read_at(files[0], world_rank * n_float * sizeof(float), buf, n_float, MPI_FLOAT, &status);
 
-  // int *   sm_ptr = NULL;
-  // MPI_Win sm_win;
-  // MPI_Win_allocate(sizeof(int), sizeof(int), MPI_INFO_NULL, MPI_COMM_WORLD, &sm_ptr, &sm_win);
-
-  // // We are assuming at least 2 processes for this task
-  // if (world_size != 2) {
-  //   fprintf(stderr, "World size must be two for %s\n", argv[0]);
-  //   MPI_Abort(MPI_COMM_WORLD, 1);
+  // for (int i=0; i<n_float; ++i){
+  //   printf("in rank %d, now is %f\n", world_rank, buf[i]);
   // }
 
-  // int ping_pong_count = 0;
-  // int partner_rank = (world_rank + 1) % 2;
-  // while (ping_pong_count < PING_PONG_LIMIT) {
-  //   if (world_rank == ping_pong_count % 2) {
-  //     // Increment the ping pong count before you send it
-  //     ping_pong_count++;
-  //     MPI_Send(&ping_pong_count, 1, MPI_INT, partner_rank, 0, MPI_COMM_WORLD);
-  //     printf("%d sent and incremented ping_pong_count %d to %d\n",
-  //            world_rank, ping_pong_count, partner_rank);
-  //   } else {
-  //     MPI_Recv(&ping_pong_count, 1, MPI_INT, partner_rank, 0, MPI_COMM_WORLD,
-  //              MPI_STATUS_IGNORE);
-  //     printf("%d received ping_pong_count %d from %d\n",
-  //            world_rank, ping_pong_count, partner_rank);
-  //   }
-  // }
-  // MPI_Finalize();
+  CSET_Data *data = new CSET_Data(num_files, num_data, slot_size, num_parameters, files, shared_file_table);
+
+  CSET_Worker *worker = new CSET_Worker(world_rank, num_slots, num_parameters, slot_size,
+              shared_table, shared_slots, data);
+
+  worker -> evolve();
+
+
+  delete files;
+  finish(shared_table, shared_slots, shared_file_table);
+
 }
