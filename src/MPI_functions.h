@@ -1,6 +1,8 @@
 #ifndef MPI_FUNC_H
 #define MPI_FUNC_H
 
+#include <stdio.h>
+
 #include <mpi.h>
 
 

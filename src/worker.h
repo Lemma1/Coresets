@@ -4,6 +4,7 @@
 #include "data.h"
 
 #include <mpi.h>
+#include <stdio.h>
 #include <unordered_map>
 
 struct Shared_mem_float{
