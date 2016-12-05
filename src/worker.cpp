@@ -307,7 +307,9 @@ int CSET_Worker::evolve()
     return 3;
   }
   // printf("Worker %d did nothing\n", m_rank);
+  // lock_file_table();
   if (able_to_finish()){
+    // unlock_file_table();
     unlock_slot_table();
     return 0;
   }
@@ -324,6 +326,7 @@ bool CSET_Worker::able_to_finish()
     // printf("<%d, %d>\n", map_it->first, map_it -> second);
     if (map_it -> first > 0) active_sum += map_it -> second;
   }
+  if (!m_data -> is_finished()) return false;
   if (active_sum != 1) return false;
   if (m_slot_info.find(-1) != m_slot_info.end()) return false;
   return true;

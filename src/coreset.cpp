@@ -5,6 +5,7 @@
 #include "MPI_functions.h"
 
 #include <fstream>
+#include <unistd.h>
 #include <mpi.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -57,16 +58,28 @@ int main(int argc, char** argv)
               shared_table, shared_slots, data);
 
   int task_idx;
-  int max_counter = 100;
+  int max_counter = 10;
   int counter = 0;
+
+  MPI_Barrier( MPI_COMM_WORLD );
   while(true){
     task_idx = worker -> evolve();
     // printf("worker %d, task_idx is now %d\n", world_rank, task_idx);
-    if(!task_idx) break;
-    if(task_idx == -1) ++counter;
+    if(!task_idx) {
+      printf("worker %d sleeping!\n", world_rank);
+      ++counter;
+      sleep(1);
+    }
+    // if(task_idx == -1){
+    //   printf("worker %d sleeping!\n", world_rank);
+    //   ++counter;
+    //   sleep(1);
+    // }
     if(counter == max_counter) break;
   }
 
+  printf("worker %d is going to finish\n", world_rank);
+  MPI_Barrier( MPI_COMM_WORLD );
 
   if(world_rank == 0){
     std::ofstream outfile;
