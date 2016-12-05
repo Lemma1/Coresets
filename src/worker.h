@@ -22,12 +22,13 @@ public:
   Shared_mem_float m_shared_slots;
   CSET_Data *m_data;
   std::unordered_map<int, int> m_slot_info;
+  std::string m_method;
 
 	CSET_Worker(const int &rank, const int &num_slots, 
               const int &num_parameters, const int& slot_size,
               Shared_mem_int shared_table,  
               Shared_mem_float shared_slots,
-              CSET_Data *data);
+              CSET_Data *data, std::string method);
 	~CSET_Worker();
   int lock_all();
   int lock_file_table();

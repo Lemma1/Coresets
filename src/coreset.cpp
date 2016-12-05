@@ -20,6 +20,7 @@ int main(int argc, char** argv)
   int num_data = conf_reader.get_int("num_data");
   int slot_size = conf_reader.get_int("slot_size");
   std::string file_name = conf_reader.get_string("data_file_name");
+  std::string method_name = conf_reader.get_string("method");
 
   int world_rank;
   int world_size;
@@ -55,7 +56,7 @@ int main(int argc, char** argv)
   CSET_Data *data = new CSET_Data(num_files, num_data, slot_size, num_parameters, files, shared_file_table);
 
   CSET_Worker *worker = new CSET_Worker(world_rank, num_slots, num_parameters, slot_size,
-              shared_table, shared_slots, data);
+              shared_table, shared_slots, data, method_name);
 
   int task_idx;
   int max_counter = 3;

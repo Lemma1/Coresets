@@ -8,7 +8,7 @@ CSET_Worker::CSET_Worker(const int &rank, const int &num_slots,
                         const int &num_parameters, const int& slot_size,
                         Shared_mem_int shared_table,
                         Shared_mem_float shared_slots,
-                        CSET_Data *data)
+                        CSET_Data *data, std::string method)
 {
 	m_rank = rank;
 	m_num_slots = num_slots;
@@ -17,6 +17,7 @@ CSET_Worker::CSET_Worker(const int &rank, const int &num_slots,
   m_shared_table = shared_table;
   m_shared_slots = shared_slots;
   m_data = data;
+  m_method = method;
   std::unordered_map<int, int> m_slot_info = std::unordered_map<int, int>();
 }
 
@@ -212,13 +213,20 @@ int CSET_Worker::retrive_slots(const std::pair<int, int>& slots,
 
 int CSET_Worker::merge_slots(std::pair<int, int> slots)
 {
-  // merge_slots_SVD(&m_shared_slots.ptr[slots.first * m_num_parameters], 
-  //           &m_shared_slots.ptr[slots.second * m_num_parameters],
-  //           m_slot_size, m_num_parameters);
-  merge_slots_ADS(&m_shared_slots.ptr[slots.first * m_num_parameters], 
-            &m_shared_slots.ptr[slots.second * m_num_parameters],
-            m_slot_size, m_num_parameters);  
-  return 0;
+  if(m_method == "svd"){
+    merge_slots_SVD(&m_shared_slots.ptr[slots.first * m_num_parameters], 
+              &m_shared_slots.ptr[slots.second * m_num_parameters],
+              m_slot_size, m_num_parameters); 
+    return 0;   
+  }
+  if(m_method == "ads"){    
+    merge_slots_ADS(&m_shared_slots.ptr[slots.first * m_num_parameters], 
+              &m_shared_slots.ptr[slots.second * m_num_parameters],
+              m_slot_size, m_num_parameters);  
+    return 0;
+  }
+  printf("No method availabe for %d\n", m_method.c_str());
+  exit(-1);
 }
 
 void CSET_Worker::print_slot_table()
