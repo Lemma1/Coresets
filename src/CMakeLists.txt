@@ -7,7 +7,7 @@ SET(CMAKE_CXX_COMPILER mpicxx)
 
 SET(CMAKE_CXX_FLAGS "-std=c++11 -m64")
 
-add_executable (coreset coreset.cpp worker.cpp config.cpp data.cpp)
+add_executable (coreset coreset.cpp worker.cpp config.cpp data.cpp util.cpp)
 target_link_libraries(coreset mpi)
 
 add_executable (gen fake_data_gen.cpp config.cpp)
