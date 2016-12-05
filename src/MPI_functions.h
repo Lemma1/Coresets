@@ -8,7 +8,7 @@
 
 extern "C" int init(int *world_rank, int *world_size)
 {
-  printf("Init the MPI process\n");
+  // printf("Init the MPI process\n");
   MPI_Init(NULL, NULL);
   MPI_Comm_rank(MPI_COMM_WORLD, world_rank);
   MPI_Comm_size(MPI_COMM_WORLD, world_size);
@@ -19,7 +19,7 @@ extern "C" int allocate_slots(const int &num_slots, const int &num_parameters,
                               const int &slot_size,
                               Shared_mem_float &shared_slots)
 {
-  printf("Allocating slots.\n");
+  // printf("Allocating slots.\n");
   int size = num_slots * num_parameters * slot_size;
   MPI_Win_allocate(sizeof(float) * size, sizeof(float), MPI_INFO_NULL, MPI_COMM_WORLD, &(shared_slots.ptr), &(shared_slots.win));
   memset(shared_slots.ptr, 0x0, sizeof(float) * size);
@@ -27,7 +27,7 @@ extern "C" int allocate_slots(const int &num_slots, const int &num_parameters,
 
 extern "C" int allocate_table(const int &num_slots, Shared_mem_int &shared_table)
 {
-  printf("Allocating table.\n");
+  // printf("Allocating table.\n");
   int num_info = 3;
   int size = num_info * num_slots;
   MPI_Win_allocate(sizeof(int) * size, sizeof(int), MPI_INFO_NULL, MPI_COMM_WORLD, &(shared_table.ptr), &(shared_table.win));
@@ -40,7 +40,7 @@ extern "C" int allocate_table(const int &num_slots, Shared_mem_int &shared_table
 
 extern "C" int allocate_file_table(const int &num_files, Shared_mem_int &shared_file_table)
 {
-  printf("Allocating file table.\n");
+  // printf("Allocating file table.\n");
   int num_info = 2;
   int size = num_info * num_files;
   MPI_Win_allocate(sizeof(int) * size, sizeof(int), MPI_INFO_NULL, MPI_COMM_WORLD, &(shared_file_table.ptr), &(shared_file_table.win));

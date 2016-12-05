@@ -99,7 +99,7 @@ int CSET_Worker::get_slot_info()
       }
       else{
         (m_slot_info.find(level)) -> second += 1;
-      }      
+      } 
     }
   }
   int total_counter =0;
@@ -264,7 +264,6 @@ int CSET_Worker::evolve()
       return 1;
   }
   unlock_file_table();
-
   std::pair <int, int> slots;
   std::pair <int, int> ranks;
   if ((slots = get_same_level_slots()) != std::pair<int, int>(-1, -1)){
@@ -275,17 +274,14 @@ int CSET_Worker::evolve()
     edit_table_info(slots.first, -1, -2, -2);
     edit_table_info(slots.second, -1, -2, -2);
     unlock_slot_table();
-
     retrive_slots(slots, ranks);
     merge_slots(slots);
-
     lock_slot_table();
     edit_table_info(slots.first, 1, m_rank, slot_level+1);
-    edit_table_info(slots.second, 0, -1, -1);    
+    edit_table_info(slots.second, 0, -1, -1);  
     unlock_slot_table();
     return 2;
   }
-
   if ((slots = get_diff_level_slots()) != std::pair<int, int>(-1, -1)){
     std::pair<int, int> slots_level;
     ranks.first = m_shared_table.ptr[3*slots.first + 1];

@@ -85,6 +85,10 @@ int main(int argc, char** argv)
       exit(-1);
     }
     float *ptr = &shared_slots.ptr[slot_idx * slot_size * num_parameters];
+    MPI_Get(ptr, 
+      num_parameters * slot_size, 
+      MPI_FLOAT, shared_table.ptr[slot_idx * 3 + 1], num_parameters * slot_size * slot_idx,
+      num_parameters * slot_size, MPI_FLOAT, shared_slots.win);
     for(int i=0; i<slot_size * num_parameters; ++i){
       r = ptr[i];
       // printf("%f\n", r);

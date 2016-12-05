@@ -47,14 +47,15 @@ int CSET_Data::get_available()
 
 
 int CSET_Data::fill_slot(const int &file_idx, float *start_ptr, 
-                        const int &num_slot)
+                        const int &slot_idx)
 {
   MPI_Status status;
-  int result = MPI_File_read_at(m_files[file_idx], m_shared_file_table.ptr[file_idx * 2 + 1], 
-                  &(start_ptr[num_slot * m_num_parameters * m_slot_size]), 
+  int result = MPI_File_read_at(m_files[file_idx], 
+                  m_shared_file_table.ptr[file_idx * 2 + 1], 
+                  &(start_ptr[slot_idx * m_num_parameters * m_slot_size]), 
                   m_num_parameters * m_slot_size, MPI_FLOAT, &status);  
    if(result != MPI_SUCCESS){
-    printf("Error on reading slot %d\n", num_slot);
+    printf("Error on reading slot %d\n", slot_idx);
     exit(-1);
    }
 }

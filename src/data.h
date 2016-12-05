@@ -24,7 +24,7 @@ public:
             MPI_File *files, Shared_mem_int shared_file_table);
   ~CSET_Data();
   int fill_slot(const int &file_idx, float *start_ptr, 
-                const int &num_slot);
+                const int &slot_idx);
   bool is_finished();
   int get_available();
 };
