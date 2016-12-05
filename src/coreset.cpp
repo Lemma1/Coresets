@@ -69,7 +69,7 @@ int main(int argc, char** argv)
     if(!task_idx) {
       printf("worker %d sleeping!\n", world_rank);
       ++counter;
-      sleep(1);
+      // sleep(1);
     }
     // if(task_idx == -1){
     //   printf("worker %d sleeping!\n", world_rank);
