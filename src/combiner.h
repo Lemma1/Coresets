@@ -22,6 +22,14 @@ extern "C" int merge_slots_SVD(float *first_ptr, float *second_ptr,
   redsvd.compute(input, slot_size);
   Eigen::VectorXf s = redsvd.singularValues();
   Eigen::MatrixXf v = redsvd.matrixV();
+  float scalar;
+  for(int i=0; i<slot_size; ++i){
+    scalar = s(i);
+    for(int j=0; j<num_parameters; ++j){
+      first_ptr[i * num_parameters + j] = v(j, i) * scalar;
+    }
+  }
+
   return 0;
 }
 

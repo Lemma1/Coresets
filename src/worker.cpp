@@ -195,16 +195,17 @@ std::pair<int, int> CSET_Worker::get_diff_level_slots()
 
 
 
-int CSET_Worker::retrive_slots(const std::pair<int, int>& slots)
+int CSET_Worker::retrive_slots(const std::pair<int, int>& slots,
+                                const std::pair<int, int>& ranks)
 {
   // printf("Entering retrive_slots\n");
   MPI_Get(&(m_shared_slots.ptr[m_num_parameters * m_slot_size * slots.first]), 
         m_num_parameters * m_slot_size, 
-        MPI_FLOAT, 0, m_num_parameters * m_slot_size * slots.first,
+        MPI_FLOAT, ranks.first, m_num_parameters * m_slot_size * slots.first,
         m_num_parameters * m_slot_size, MPI_FLOAT, m_shared_slots.win);
   MPI_Get(&(m_shared_slots.ptr[m_num_parameters * m_slot_size * slots.second]), 
         m_num_parameters * m_slot_size, 
-        MPI_FLOAT, 0, m_num_parameters * m_slot_size * slots.second,
+        MPI_FLOAT, ranks.second, m_num_parameters * m_slot_size * slots.second,
         m_num_parameters * m_slot_size, MPI_FLOAT, m_shared_slots.win); 
   // printf("Exit retrive_slots\n"); 
   return 0;
@@ -265,14 +266,17 @@ int CSET_Worker::evolve()
   unlock_file_table();
 
   std::pair <int, int> slots;
+  std::pair <int, int> ranks;
   if ((slots = get_same_level_slots()) != std::pair<int, int>(-1, -1)){
     int slot_level = m_shared_table.ptr[3*slots.first + 2];
+    ranks.first = m_shared_table.ptr[3*slots.first + 1];
+    ranks.second = m_shared_table.ptr[3*slots.second + 1];
     printf("worker %d, now merging SAME LEVEL data from slots %d and %d on level %d.\n", m_rank, slots.first, slots.second, slot_level);
     edit_table_info(slots.first, -1, -2, -2);
     edit_table_info(slots.second, -1, -2, -2);
     unlock_slot_table();
 
-    retrive_slots(slots);
+    retrive_slots(slots, ranks);
     merge_slots(slots);
 
     lock_slot_table();
@@ -284,6 +288,8 @@ int CSET_Worker::evolve()
 
   if ((slots = get_diff_level_slots()) != std::pair<int, int>(-1, -1)){
     std::pair<int, int> slots_level;
+    ranks.first = m_shared_table.ptr[3*slots.first + 1];
+    ranks.second = m_shared_table.ptr[3*slots.second + 1];
     slots_level.first = m_shared_table.ptr[3*slots.first + 2];
     slots_level.second = m_shared_table.ptr[3*slots.second + 2];
     int max_level = std::max(slots_level.first, slots_level.second);
@@ -293,7 +299,7 @@ int CSET_Worker::evolve()
     edit_table_info(slots.second, -1, -2, -2);
     unlock_slot_table();
 
-    retrive_slots(slots);
+    retrive_slots(slots, ranks);
     merge_slots(slots);
 
     lock_slot_table();
