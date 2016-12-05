@@ -14,10 +14,11 @@ extern "C" int init(int *world_rank, int *world_size)
 
 
 extern "C" int allocate_slots(const int &num_slots, const int &num_parameters, 
+                              const int &slot_size,
                               Shared_mem_float &shared_slots)
 {
   printf("Allocating slots.\n");
-  int size = num_slots * num_parameters;
+  int size = num_slots * num_parameters * slot_size;
   MPI_Win_allocate(sizeof(float) * size, sizeof(float), MPI_INFO_NULL, MPI_COMM_WORLD, &(shared_slots.ptr), &(shared_slots.win));
   memset(shared_slots.ptr, 0x0, sizeof(float) * size);
 }
@@ -57,9 +58,9 @@ extern "C" int open_files(const int &num_files, MPI_File *files, Shared_mem_int 
   
 }
 
-extern "C" int finish(Shared_mem_int &shared_table, Shared_mem_float &shared_slots, Shared_mem_int &shared_file_table)
+extern "C" int finish(const int &rank, Shared_mem_int &shared_table, Shared_mem_float &shared_slots, Shared_mem_int &shared_file_table)
 {
-  printf("Finish the MPI program\n");
+  printf("Worker %d, Finish the MPI program\n", rank);
   MPI_Win_free(&(shared_slots.win)); //will delete the memory
   MPI_Win_free(&(shared_table.win));
   MPI_Win_free(&(shared_file_table.win));

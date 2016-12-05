@@ -31,7 +31,7 @@ int main(int argc, char** argv)
   // printf("For worker %d, the pointer is %x\n", world_rank, shared_table.ptr);
 
   Shared_mem_float shared_slots = Shared_mem_float();
-  allocate_slots(num_slots, num_parameters, shared_slots);
+  allocate_slots(num_slots, num_parameters, slot_size, shared_slots);
   // printf("For worker %d, the pointer is %x\n", world_rank, shared_slots.ptr);
 
   Shared_mem_int shared_file_table = Shared_mem_int();
@@ -40,8 +40,6 @@ int main(int argc, char** argv)
 
   MPI_File *files = new MPI_File[num_files];
   open_files(num_files, files, shared_file_table, file_name);
-
-
 
   // int n_float = 2;
   // float buf[n_float];
@@ -57,10 +55,19 @@ int main(int argc, char** argv)
   CSET_Worker *worker = new CSET_Worker(world_rank, num_slots, num_parameters, slot_size,
               shared_table, shared_slots, data);
 
-  worker -> evolve();
+  int task_idx;
+  // int max_counter = 10;
+  // int counter = 0;
+  while(true){
+    task_idx = worker -> evolve();
+    printf("worker %d, task_idx is now %d\n", world_rank, task_idx);
+    if(!task_idx) break;
+    // if(task_idx == -1) ++counter;
+    // if(counter == max_counter) break;
+  }
 
 
   delete files;
-  finish(shared_table, shared_slots, shared_file_table);
+  finish(world_rank, shared_table, shared_slots, shared_file_table);
 
 }

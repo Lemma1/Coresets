@@ -37,6 +37,12 @@ public:
   int unlock_all();
   int get_slot_info();
   int evolve();
+  std::pair<int, int> get_same_level_slots();
+  std::pair<int, int> get_diff_level_slots();
+  void print_slot_table();
+  int retrive_slots(const std::pair<int, int>& slots);
+  int merge_slots();
+  bool able_to_finish();
 };
 
 
