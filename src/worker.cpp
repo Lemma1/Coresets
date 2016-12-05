@@ -148,12 +148,11 @@ std::pair<int, int> CSET_Worker::get_same_level_slots()
     // printf("Get same level slots (%d, %d)\n", map_it -> first, map_it -> second);
     if (map_it -> first > 0 && map_it -> second > 1){
       int counter = 0; 
-      while(counter < 2){
-        for(int i=0; i< m_num_slots; ++i){
-          if (m_shared_table.ptr[3 * i + 2] == map_it -> first){
-            temp[counter] = i;
-            ++counter;
-          }
+      for(int i=0; i< m_num_slots; ++i){
+        if (m_shared_table.ptr[3 * i + 2] == map_it -> first){
+          temp[counter] = i;
+          ++counter;
+          if(counter == 2) break;
         }
       }
       output.first = temp[0];

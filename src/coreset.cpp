@@ -61,7 +61,7 @@ int main(int argc, char** argv)
   // int counter = 0;
   while(true){
     task_idx = worker -> evolve();
-    printf("worker %d, task_idx is now %d\n", world_rank, task_idx);
+    // printf("worker %d, task_idx is now %d\n", world_rank, task_idx);
     if(!task_idx) break;
     // if(task_idx == -1) ++counter;
     // if(counter == max_counter) break;
