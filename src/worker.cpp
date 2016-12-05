@@ -304,12 +304,12 @@ int CSET_Worker::evolve()
 
 bool CSET_Worker::able_to_finish()
 {
-  // print_slot_table();
+  print_slot_table();
   int active_sum = 0;
   for (auto map_it = m_slot_info.begin(); map_it != m_slot_info.end(); ++map_it){
     // printf("<%d, %d>\n", map_it->first, map_it -> second);
     if (map_it -> first > 0) active_sum += map_it -> second;
-    if (active_sum >= 2) return false;
+    if (active_sum >= 2 || active_sum < 1) return false;
   }
   if (m_slot_info.find(-1) != m_slot_info.end()) return false;
   return true;
