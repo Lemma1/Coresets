@@ -1,5 +1,7 @@
 #include "data.h"
 
+#include <stdlib.h>
+
 CSET_Data::CSET_Data(const int &num_files, const int &num_data, 
                       const int &slot_size, const int &num_parameters,
                       MPI_File *files, Shared_mem_int shared_file_table)

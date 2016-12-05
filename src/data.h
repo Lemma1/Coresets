@@ -2,7 +2,6 @@
 #define DATA_H
 
 #include <stdio.h>
-
 #include <mpi.h>
 
 struct Shared_mem_int{
