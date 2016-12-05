@@ -29,6 +29,10 @@ public:
               CSET_Data *data);
 	~CSET_Worker();
   int lock_all();
+  int lock_file_table();
+  int lock_slot_table();
+  int unlock_file_table();
+  int unlock_slot_table();
   int update_info();
   int edit_file_info(const int &file_idx, const int &status, 
                         const int& count);
@@ -41,7 +45,7 @@ public:
   std::pair<int, int> get_diff_level_slots();
   void print_slot_table();
   int retrive_slots(const std::pair<int, int>& slots);
-  int merge_slots();
+  int merge_slots(std::pair<int, int> slots);
   bool able_to_finish();
 };
 
