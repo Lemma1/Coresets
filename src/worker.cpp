@@ -2,6 +2,8 @@
 
 #include "combiner.h"
 
+#include <stdlib.h>
+
 CSET_Worker::CSET_Worker(const int &rank, const int &num_slots, 
                         const int &num_parameters, const int& slot_size,
                         Shared_mem_int shared_table,
@@ -99,6 +101,14 @@ int CSET_Worker::get_slot_info()
         (m_slot_info.find(level)) -> second += 1;
       }      
     }
+  }
+  int total_counter =0;
+  for (auto map_it = m_slot_info.begin(); map_it !=m_slot_info.end(); ++map_it){
+    total_counter += map_it -> second;
+  }
+  if (total_counter != m_num_slots){
+    printf("ERROR! wrong counter!\n");
+    exit(-1);
   }
   return 0;
 }
@@ -304,13 +314,13 @@ int CSET_Worker::evolve()
 
 bool CSET_Worker::able_to_finish()
 {
-  print_slot_table();
+  // print_slot_table();
   int active_sum = 0;
   for (auto map_it = m_slot_info.begin(); map_it != m_slot_info.end(); ++map_it){
-    printf("<%d, %d>\n", map_it->first, map_it -> second);
+    // printf("<%d, %d>\n", map_it->first, map_it -> second);
     if (map_it -> first > 0) active_sum += map_it -> second;
-    if (active_sum != 1) return false;
   }
+  if (active_sum != 1) return false;
   if (m_slot_info.find(-1) != m_slot_info.end()) return false;
   return true;
 }
