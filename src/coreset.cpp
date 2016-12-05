@@ -58,7 +58,7 @@ int main(int argc, char** argv)
               shared_table, shared_slots, data);
 
   int task_idx;
-  int max_counter = 10;
+  int max_counter = 3;
   int counter = 0;
 
   MPI_Barrier( MPI_COMM_WORLD );
