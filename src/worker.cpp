@@ -212,12 +212,12 @@ int CSET_Worker::retrive_slots(const std::pair<int, int>& slots,
 
 int CSET_Worker::merge_slots(std::pair<int, int> slots)
 {
-  // merge_slots_SVD(&m_shared_slots.ptr[slots.first * m_num_parameters], 
-  //           &m_shared_slots.ptr[slots.second * m_num_parameters],
-  //           m_slot_size, m_num_parameters);
-  merge_slots_ADS(&m_shared_slots.ptr[slots.first * m_num_parameters], 
+  merge_slots_SVD(&m_shared_slots.ptr[slots.first * m_num_parameters], 
             &m_shared_slots.ptr[slots.second * m_num_parameters],
-            m_slot_size, m_num_parameters);  
+            m_slot_size, m_num_parameters);
+  // merge_slots_ADS(&m_shared_slots.ptr[slots.first * m_num_parameters], 
+  //           &m_shared_slots.ptr[slots.second * m_num_parameters],
+  //           m_slot_size, m_num_parameters);  
   return 0;
 }
 
