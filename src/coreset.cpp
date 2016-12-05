@@ -57,14 +57,14 @@ int main(int argc, char** argv)
               shared_table, shared_slots, data);
 
   int task_idx;
-  // int max_counter = 10;
-  // int counter = 0;
+  int max_counter = 100;
+  int counter = 0;
   while(true){
     task_idx = worker -> evolve();
     // printf("worker %d, task_idx is now %d\n", world_rank, task_idx);
     if(!task_idx) break;
-    // if(task_idx == -1) ++counter;
-    // if(counter == max_counter) break;
+    if(task_idx == -1) ++counter;
+    if(counter == max_counter) break;
   }
 
 
