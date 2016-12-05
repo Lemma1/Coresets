@@ -4,6 +4,7 @@
 
 #include "MPI_functions.h"
 
+#include <fstream>
 #include <mpi.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -60,12 +61,38 @@ int main(int argc, char** argv)
   // int counter = 0;
   while(true){
     task_idx = worker -> evolve();
-    printf("worker %d, task_idx is now %d\n", world_rank, task_idx);
+    // printf("worker %d, task_idx is now %d\n", world_rank, task_idx);
     if(!task_idx) break;
     // if(task_idx == -1) ++counter;
     // if(counter == max_counter) break;
   }
 
+
+  if(world_rank == 0){
+    std::ofstream outfile;
+    float r;
+    std::string outfile_name = conf_reader.get_string("outfile_name");
+    outfile.open(outfile_name, std::ios::out | std::ios::binary);
+    int slot_idx = -1;
+    for(int i=0; i<num_slots; ++i){
+      if (shared_table.ptr[i * 3] == 1){
+        slot_idx = i;
+        break;
+      }
+    }
+    if (slot_idx == -1) {
+      printf("ERROR! wrong slot index\n");
+      exit(-1);
+    }
+    float *ptr = &shared_slots.ptr[slot_idx * slot_size * num_parameters];
+    for(int i=0; i<slot_size * num_parameters; ++i){
+      r = ptr[i];
+      // printf("%f\n", r);
+      outfile.write((char*)&r, sizeof(float));
+    }
+    outfile.close();
+
+  }
 
   delete files;
   finish(world_rank, shared_table, shared_slots, shared_file_table);
