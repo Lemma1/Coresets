@@ -261,7 +261,7 @@ int CSET_Worker::evolve()
   update_info();
   get_slot_info();
   // printf("For worker %d, the table is:\n", m_rank);
-  // print_slot_table();
+  print_slot_table();
   int availabe_file_idx;
   if ((!m_data -> is_finished()) && 
       ((availabe_file_idx = m_data -> get_available()) != -1) &&
