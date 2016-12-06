@@ -2,9 +2,21 @@
 
 #include <stdlib.h>
 
+// CSET_Data::CSET_Data(const int &num_files, const int &num_data, 
+//                       const int &slot_size, const int &num_parameters,
+//                       MPI_File *files, Shared_mem_int shared_file_table)
+// {
+//   m_num_data = num_data;
+//   m_num_files = num_files;
+//   m_slot_size = slot_size;
+//   m_num_parameters = num_parameters;
+//   m_files = files;
+//   m_shared_file_table = shared_file_table;
+// }
+
 CSET_Data::CSET_Data(const int &num_files, const int &num_data, 
                       const int &slot_size, const int &num_parameters,
-                      MPI_File *files, Shared_mem_int shared_file_table)
+                      std::ifstream  *files, Shared_mem_int shared_file_table)
 {
   m_num_data = num_data;
   m_num_files = num_files;
@@ -49,15 +61,19 @@ int CSET_Data::get_available()
 int CSET_Data::fill_slot(const int &file_idx, float *start_ptr, 
                         const int &slot_idx)
 {
-  MPI_Status status;
-  int result = MPI_File_read_at(m_files[file_idx], 
-                  m_shared_file_table.ptr[file_idx * 2 + 1], 
-                  &(start_ptr[slot_idx * m_num_parameters * m_slot_size]), 
-                  m_num_parameters * m_slot_size, MPI_FLOAT, &status);  
-   if(result != MPI_SUCCESS){
-    printf("Error on reading slot %d\n", slot_idx);
-    exit(-1);
-   }
+  // MPI_Status status;
+  // int result = MPI_File_read_at(m_files[file_idx], 
+  //                 m_shared_file_table.ptr[file_idx * 2 + 1] * m_num_parameters * sizeof(float), 
+  //                 &(start_ptr[slot_idx * m_num_parameters * m_slot_size]), 
+  //                 m_num_parameters * m_slot_size, MPI_FLOAT, &status);  
+   // if(result != MPI_SUCCESS){
+   //  printf("Error on reading slot %d\n", slot_idx);
+   //  exit(-1);
+   // }
+
+  m_files[file_idx].read((char *)&(start_ptr[slot_idx * m_num_parameters * m_slot_size]), 
+                          m_num_parameters * m_slot_size * sizeof(float));
+  return 0;
 }
 
 

@@ -41,7 +41,8 @@ int main(int argc, char** argv)
   allocate_file_table(num_files, shared_file_table);
   // printf("For worker %d, the pointer is %x\n", world_rank, shared_file_table.ptr);
 
-  MPI_File *files = new MPI_File[num_files];
+  // MPI_File *files = new MPI_File[num_files];
+  std::ifstream *files = new std::ifstream[num_files];
   open_files(num_files, files, shared_file_table, file_name);
 
   // int n_float = 2;
@@ -62,8 +63,8 @@ int main(int argc, char** argv)
   int max_counter = 3;
   int counter = 0;
 
-  MPI_Barrier( MPI_COMM_WORLD );
-  while(world_rank){
+  // MPI_Barrier( MPI_COMM_WORLD );
+  while(true){
     task_idx = worker -> evolve();
     // printf("worker %d, task_idx is now %d\n", world_rank, task_idx);
     if(!task_idx) {
@@ -80,7 +81,7 @@ int main(int argc, char** argv)
   }
 
   printf("worker %d is going to finish\n", world_rank);
-  MPI_Barrier( MPI_COMM_WORLD );
+  // MPI_Barrier( MPI_COMM_WORLD );
 
   if(world_rank == 0){
     std::ofstream outfile;
@@ -98,21 +99,24 @@ int main(int argc, char** argv)
       printf("ERROR! wrong slot index\n");
       exit(-1);
     }
-    float *ptr = &shared_slots.ptr[slot_idx * slot_size * num_parameters];
-    MPI_Get(ptr, 
-      num_parameters * slot_size, 
-      MPI_FLOAT, shared_table.ptr[slot_idx * 3 + 1], num_parameters * slot_size * slot_idx,
-      num_parameters * slot_size, MPI_FLOAT, shared_slots.win);
+
+    float *ptr = shared_slots.ptr + num_parameters * slot_size * slot_idx;
+    // MPI_Win_lock(MPI_LOCK_EXCLUSIVE, 0, 0, shared_slots.win);
+    // worker -> update_info();
+    // MPI_Get(ptr, 
+    //   num_parameters * slot_size, 
+    //   MPI_FLOAT, shared_table.ptr[slot_idx * 3 + 1], num_parameters * slot_size * slot_idx,
+    //   num_parameters * slot_size, MPI_FLOAT, shared_slots.win);
+    // MPI_Win_unlock(0, shared_slots.win);
     for(int i=0; i<slot_size * num_parameters; ++i){
       r = ptr[i];
       // printf("%f\n", r);
       outfile.write((char*)&r, sizeof(float));
     }
     outfile.close();
-
   }
 
-  delete files;
+  // delete files;
   finish(world_rank, shared_table, shared_slots, shared_file_table);
 
 }

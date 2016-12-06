@@ -83,6 +83,7 @@ int CSET_Worker::update_info(){
           3 * m_num_slots, MPI_INT, m_shared_table.win);
   MPI_Get(m_data -> m_shared_file_table.ptr, 2 * m_data -> m_num_files, MPI_INT, 0, 0,
           2 * m_data -> m_num_files, MPI_INT, m_data -> m_shared_file_table.win);
+  MPI_Win_flush_all(m_data -> m_shared_file_table.win);
   return 0;
 }
 
@@ -138,8 +139,9 @@ int CSET_Worker::edit_file_info(const int &file_idx, const int &status,
   // MPI_Put(, int origin_count, MPI_Datatype
   //   origin_datatype, int target_rank, MPI_Aint target_disp,
   //   int target_count, MPI_Datatype target_datatype, MPI_Win win)
-  MPI_Put(&(m_data -> m_shared_file_table.ptr[2*file_idx]), 2, MPI_INT, 
-    0, 2*file_idx, 2, MPI_INT, m_data -> m_shared_file_table.win);
+  // MPI_Put(&(m_data -> m_shared_file_table.ptr[2*file_idx]), 2, MPI_INT, 
+    // 0, 2*file_idx, 2, MPI_INT, m_data -> m_shared_file_table.win);
+  // MPI_Win_flush_all(m_data -> m_shared_file_table.win);
   return 0;
 }
 
@@ -150,8 +152,10 @@ int CSET_Worker::edit_table_info(const int &slot_idx, const int &status,
   if (status != -2) m_shared_table.ptr[3 * slot_idx] = status;
   if (rank != -2) m_shared_table.ptr[3 * slot_idx+1] = rank;
   if (level != -2) m_shared_table.ptr[3 * slot_idx+2] = level;
-  MPI_Put(&m_shared_table.ptr[3 * slot_idx], 3, MPI_INT, 
-    0, 3 * slot_idx, 3, MPI_INT, m_shared_table.win);
+  // MPI_Put(&m_shared_table.ptr[3 * slot_idx], 3, MPI_INT, 
+    // 0, 3 * slot_idx, 3, MPI_INT, m_shared_table.win);
+  // MPI_Win_flush_all(m_shared_table.win);
+
   return 0;
 }
 
@@ -223,21 +227,22 @@ int CSET_Worker::retrive_slots(const std::pair<int, int>& slots,
         m_num_parameters * m_slot_size, 
         MPI_FLOAT, ranks.second, m_num_parameters * m_slot_size * slots.second,
         m_num_parameters * m_slot_size, MPI_FLOAT, m_shared_slots.win); 
+  MPI_Win_flush_all(m_shared_slots.win);
   // printf("Exit retrive_slots\n"); 
   return 0;
 }
 
-int CSET_Worker::merge_slots(std::pair<int, int> slots)
+int CSET_Worker::merge_slots(std::pair<int, int> &slots)
 {
   if(m_method == "svd"){
-    merge_slots_SVD(&m_shared_slots.ptr[slots.first * m_num_parameters], 
-              &m_shared_slots.ptr[slots.second * m_num_parameters],
+    merge_slots_SVD(m_shared_slots.ptr + slots.first * m_num_parameters * m_slot_size, 
+              m_shared_slots.ptr + slots.second * m_num_parameters * m_slot_size,
               m_slot_size, m_num_parameters); 
     return 0;   
   }
   if(m_method == "ads"){    
-    merge_slots_ADS(&m_shared_slots.ptr[slots.first * m_num_parameters], 
-              &m_shared_slots.ptr[slots.second * m_num_parameters],
+    merge_slots_ADS(m_shared_slots.ptr + slots.first * m_num_parameters * m_slot_size, 
+              m_shared_slots.ptr + slots.second * m_num_parameters * m_slot_size,
               m_slot_size, m_num_parameters);  
     return 0;
   }
@@ -257,8 +262,8 @@ void CSET_Worker::print_slot_table()
 
 int CSET_Worker::evolve()
 {
-  lock_all();
-  update_info();
+  // lock_all();
+  // update_info();
   get_slot_info();
   // printf("For worker %d, the table is:\n", m_rank);
   // print_slot_table();
@@ -280,16 +285,18 @@ int CSET_Worker::evolve()
               m_rank, availabe_slot_idx, availabe_file_idx, 
               m_data -> m_shared_file_table.ptr[2 * availabe_file_idx + 1]);
       // print_slot_table();
-      unlock_all();
-
+      // unlock_all();
+      // std::cout << "Before read" << std::endl;
+      // print_slots();
       m_data -> fill_slot(availabe_file_idx, m_shared_slots.ptr, availabe_slot_idx);
-
-      lock_all();
+      // std::cout << "After read" << std::endl;
+      // print_slots();
+      // lock_all();
       int counter = m_data -> m_shared_file_table.ptr[2 * availabe_file_idx + 1];
       edit_file_info(availabe_file_idx, 0, counter + m_slot_size);
       edit_table_info(availabe_slot_idx, 1, m_rank, 1);
       // print_slot_table();
-      unlock_all();
+      // unlock_all();
       return 1;
   }
   // unlock_file_table();
@@ -304,23 +311,27 @@ int CSET_Worker::evolve()
     edit_table_info(slots.first, -1, -2, -2);
     edit_table_info(slots.second, -1, -2, -2);
     // print_slot_table();
-    unlock_all();
+    // unlock_all();
     // printf("worker %d start merge\n", m_rank);
-    retrive_slots(slots, ranks);
+    // retrive_slots(slots, ranks);
+    // std::cout << "Before merge" << std::endl;
+    // print_slots();
     merge_slots(slots);
+    // std::cout << "After merge" << std::endl;
+    // print_slots();
     // printf("worker %d finish merge\n", m_rank);
-    lock_all();
+    // lock_all();
     edit_table_info(slots.first, 1, m_rank, slot_level+1);
     edit_table_info(slots.second, 0, -1, -1);  
-    unlock_all();
+    // unlock_all();
     // printf("worker %d finish one run\n", m_rank);
     return 2;
   }
   if ((slots = get_diff_level_slots()) != std::pair<int, int>(-1, -1)){
     // print_slot_table();
     std::pair<int, int> slots_level;
-    ranks.first = m_shared_table.ptr[3*slots.first + 1];
-    ranks.second = m_shared_table.ptr[3*slots.second + 1];
+    // ranks.first = m_shared_table.ptr[3*slots.first + 1];
+    // ranks.second = m_shared_table.ptr[3*slots.second + 1];
     slots_level.first = m_shared_table.ptr[3*slots.first + 2];
     slots_level.second = m_shared_table.ptr[3*slots.second + 2];
     int max_level = std::max(slots_level.first, slots_level.second);
@@ -329,15 +340,19 @@ int CSET_Worker::evolve()
     edit_table_info(slots.first, -1, -2, -2);
     edit_table_info(slots.second, -1, -2, -2);
     // print_slot_table();
-    unlock_all();
+    // unlock_all();
     // printf("worker %d start merge\n", m_rank);
-    retrive_slots(slots, ranks);
+    // retrive_slots(slots, ranks);
+    // std::cout << "Before merge" << std::endl;
+    // print_slots();
     merge_slots(slots);
+    // std::cout << "After merge" << std::endl;
+    // print_slots();
     // printf("worker %d finish merge\n", m_rank);
-    lock_all();
+    // lock_all();
     edit_table_info(slots.first, 1, m_rank, max_level);
     edit_table_info(slots.second, 0, -1, -1);  
-    unlock_all();
+    // unlock_all();
     // printf("worker %d finish one run\n", m_rank);
     return 3;
   }
@@ -345,11 +360,11 @@ int CSET_Worker::evolve()
   // lock_file_table();
   if (able_to_finish()){
     // unlock_file_table();
-    unlock_all();
+    // unlock_all();
     return 0;
   }
 
-  unlock_all();
+  // unlock_all();
   return -1;
 }
 
@@ -365,4 +380,18 @@ bool CSET_Worker::able_to_finish()
   if (active_sum != 1) return false;
   if (m_slot_info.find(-1) != m_slot_info.end()) return false;
   return true;
+}
+
+int CSET_Worker::print_slots()
+{
+  for(int i=0; i<m_num_slots; ++i){
+    std::cout << "Slot " << i << std::endl;
+    for (int j = 0; j < m_slot_size; ++j)
+    {
+      for(int k=0; k<m_num_parameters; ++k){
+        std::cout << m_shared_slots.ptr[i * m_num_parameters * m_slot_size + j * m_slot_size + k] << " ";
+      }
+      std::cout << std::endl;
+    }
+  }
 }

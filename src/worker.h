@@ -47,8 +47,9 @@ public:
   std::pair<int, int> get_diff_level_slots();
   void print_slot_table();
   int retrive_slots(const std::pair<int, int>& slots, const std::pair<int, int>& ranks);
-  int merge_slots(std::pair<int, int> slots);
+  int merge_slots(std::pair<int, int> &slots);
   bool able_to_finish();
+  int print_slots();
 };
 
 
