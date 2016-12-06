@@ -261,12 +261,12 @@ int CSET_Worker::evolve()
   update_info();
   get_slot_info();
   // printf("For worker %d, the table is:\n", m_rank);
-  print_slot_table();
+  // print_slot_table();
   int availabe_file_idx;
   if ((!m_data -> is_finished()) && 
       ((availabe_file_idx = m_data -> get_available()) != -1) &&
       m_slot_info.find(0) != m_slot_info.end()){
-      
+      print_slot_table();
       int availabe_slot_idx;
       for(int i=0; i< m_num_slots; ++i){
         if (m_shared_table.ptr[3 * i] == 0){
@@ -279,6 +279,7 @@ int CSET_Worker::evolve()
       printf("worker %d, now reading files using slot %d and file %d from %d.\n", 
               m_rank, availabe_slot_idx, availabe_file_idx, 
               m_data -> m_shared_file_table.ptr[2 * availabe_file_idx + 1]);
+      print_slot_table();
       unlock_all();
 
       m_data -> fill_slot(availabe_file_idx, m_shared_slots.ptr, availabe_slot_idx);
