@@ -266,7 +266,7 @@ int CSET_Worker::evolve()
   if ((!m_data -> is_finished()) && 
       ((availabe_file_idx = m_data -> get_available()) != -1) &&
       m_slot_info.find(0) != m_slot_info.end()){
-      print_slot_table();
+      // print_slot_table();
       int availabe_slot_idx;
       for(int i=0; i< m_num_slots; ++i){
         if (m_shared_table.ptr[3 * i] == 0){
@@ -279,7 +279,7 @@ int CSET_Worker::evolve()
       printf("worker %d, now reading files using slot %d and file %d from %d.\n", 
               m_rank, availabe_slot_idx, availabe_file_idx, 
               m_data -> m_shared_file_table.ptr[2 * availabe_file_idx + 1]);
-      print_slot_table();
+      // print_slot_table();
       unlock_all();
 
       m_data -> fill_slot(availabe_file_idx, m_shared_slots.ptr, availabe_slot_idx);
@@ -296,22 +296,28 @@ int CSET_Worker::evolve()
   std::pair <int, int> slots;
   std::pair <int, int> ranks;
   if ((slots = get_same_level_slots()) != std::pair<int, int>(-1, -1)){
+    // print_slot_table();
     int slot_level = m_shared_table.ptr[3*slots.first + 2];
     ranks.first = m_shared_table.ptr[3*slots.first + 1];
     ranks.second = m_shared_table.ptr[3*slots.second + 1];
     printf("worker %d, now merging SAME LEVEL data from slots %d and %d on level %d.\n", m_rank, slots.first, slots.second, slot_level);
     edit_table_info(slots.first, -1, -2, -2);
     edit_table_info(slots.second, -1, -2, -2);
+    // print_slot_table();
     unlock_all();
+    // printf("worker %d start merge\n", m_rank);
     retrive_slots(slots, ranks);
     merge_slots(slots);
+    // printf("worker %d finish merge\n", m_rank);
     lock_all();
     edit_table_info(slots.first, 1, m_rank, slot_level+1);
     edit_table_info(slots.second, 0, -1, -1);  
     unlock_all();
+    // printf("worker %d finish one run\n", m_rank);
     return 2;
   }
   if ((slots = get_diff_level_slots()) != std::pair<int, int>(-1, -1)){
+    // print_slot_table();
     std::pair<int, int> slots_level;
     ranks.first = m_shared_table.ptr[3*slots.first + 1];
     ranks.second = m_shared_table.ptr[3*slots.second + 1];
@@ -322,15 +328,17 @@ int CSET_Worker::evolve()
             m_rank, slots.first, slots_level.first, slots.second, slots_level.second);
     edit_table_info(slots.first, -1, -2, -2);
     edit_table_info(slots.second, -1, -2, -2);
+    // print_slot_table();
     unlock_all();
-
+    // printf("worker %d start merge\n", m_rank);
     retrive_slots(slots, ranks);
     merge_slots(slots);
-
+    // printf("worker %d finish merge\n", m_rank);
     lock_all();
     edit_table_info(slots.first, 1, m_rank, max_level);
     edit_table_info(slots.second, 0, -1, -1);  
     unlock_all();
+    // printf("worker %d finish one run\n", m_rank);
     return 3;
   }
   // printf("Worker %d did nothing\n", m_rank);

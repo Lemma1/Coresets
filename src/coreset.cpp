@@ -63,7 +63,7 @@ int main(int argc, char** argv)
   int counter = 0;
 
   MPI_Barrier( MPI_COMM_WORLD );
-  while(true){
+  while(world_rank){
     task_idx = worker -> evolve();
     // printf("worker %d, task_idx is now %d\n", world_rank, task_idx);
     if(!task_idx) {
