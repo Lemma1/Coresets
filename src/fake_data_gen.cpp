@@ -17,6 +17,7 @@ int main(int argc, char** argv)
   float upper = 100.0;
   for(int i=0; i < num_data * num_parameters; ++i){
     r = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/upper));
+    printf("%f\n", r);
     f.write((char*)&r, sizeof(float));
   }
 

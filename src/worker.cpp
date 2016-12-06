@@ -389,7 +389,7 @@ int CSET_Worker::print_slots()
     for (int j = 0; j < m_slot_size; ++j)
     {
       for(int k=0; k<m_num_parameters; ++k){
-        std::cout << m_shared_slots.ptr[i * m_num_parameters * m_slot_size + j * m_slot_size + k] << " ";
+        std::cout << m_shared_slots.ptr[i * m_num_parameters * m_slot_size + j * m_num_parameters + k] << " ";
       }
       std::cout << std::endl;
     }

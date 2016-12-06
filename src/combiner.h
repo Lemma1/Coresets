@@ -28,13 +28,17 @@ extern "C" int merge_slots_SVD(float *first_ptr, float *second_ptr,
   }
   RedSVD::RedSVD<Eigen::MatrixXf> redsvd;
   redsvd.compute(input, slot_size);
+  Eigen::MatrixXf u = redsvd.matrixU().block(0, 0, slot_size, slot_size);
   Eigen::VectorXf s = redsvd.singularValues();
   Eigen::MatrixXf v = redsvd.matrixV();
-  float scalar;
+  float temp;
   for(int i=0; i<slot_size; ++i){
-    scalar = s(i);
     for(int j=0; j<num_parameters; ++j){
-      first_ptr[i * num_parameters + j] = v(j, i) * scalar;
+      temp = 0.0;
+      for(int m=0; m<slot_size; ++m){
+        temp += u(i, m) * s(m) * v(j, m);
+      }
+      first_ptr[i * num_parameters + j] = temp;
     }
   }
   return 0;
@@ -70,13 +74,13 @@ extern "C" int find_nearest_idx(float *first_ptr, float *second_ptr,
   int temp_idx;
   float *temp_ptr;
   float *target_ptr = target_idx < slot_size ? 
-                      &first_ptr[target_idx] :
-                      &second_ptr[target_idx - slot_size];
+                      &first_ptr[target_idx * num_parameters] :
+                      &second_ptr[(target_idx - slot_size) * num_parameters];
   for(auto set_it = record.begin(); set_it != record.end(); ++set_it){
     temp_idx = *set_it;
     temp_ptr = temp_idx < slot_size ? 
-                      &first_ptr[temp_idx] :
-                      &second_ptr[temp_idx - slot_size];
+                      &first_ptr[temp_idx * num_parameters] :
+                      &second_ptr[(temp_idx - slot_size) * num_parameters];
     temp_dist = distance(target_ptr, temp_ptr, num_parameters);
     if (temp_dist < cur_best){
       cur_best = temp_dist;
@@ -104,6 +108,7 @@ extern "C" int merge_slots_ADS(float *first_ptr, float *second_ptr,
     set_it = record.begin();
     std::advance(set_it, rand() % record.size());
     target_idx = *set_it;
+    // printf("Pushing %d\n", target_idx);
     idx_recorder.push_back(target_idx);
     record.erase(set_it);
     set_it = record.find(find_nearest_idx(first_ptr, second_ptr, 
@@ -113,6 +118,7 @@ extern "C" int merge_slots_ADS(float *first_ptr, float *second_ptr,
       printf("ERROR, something wrong in merge_slots_ADS\n");
       exit(-1);
     }
+    // printf("deleting %d\n", *set_it);
     record.erase(set_it);
   }
   /* important */
@@ -124,8 +130,8 @@ extern "C" int merge_slots_ADS(float *first_ptr, float *second_ptr,
   for (int slot_idx : idx_recorder){
     to_ptr = &first_ptr[counter * num_parameters];
     from_ptr = slot_idx < slot_size ? 
-                    &first_ptr[slot_idx] :
-                    &second_ptr[slot_idx - slot_size];
+                    &first_ptr[slot_idx * num_parameters] :
+                    &second_ptr[(slot_idx - slot_size) * num_parameters];
     copy_slot(from_ptr, to_ptr, num_parameters);
     ++counter;
   }
