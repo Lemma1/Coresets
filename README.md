@@ -1,6 +1,6 @@
 # Distributed-Coresets
 
-CMU　Machine Learning in Big Data 10-805 Porject
+Machine Learning in Big Data 10-805 Project in CMU 2016 Fall.
 
 The project implemented a streaming and parallelized algorithm for coresets construction. The features includes:
 - Open MPI C++ based
